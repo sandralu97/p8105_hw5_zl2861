@@ -79,10 +79,51 @@ result_df %>%
 ```
 
 
+#Question 2
 
+Create a dataframe containing all file names
+```{r}
+path_df = 
+  tibble(
+    path = list.files(path = "lda_data")
+  ) %>% 
+  mutate(path = str_c("lda_data/",path)) %>% as.list()
 
+ID_df =
+  tibble(
+    path = list.files(path = "lda_data")
+  ) %>% 
+  mutate(path = str_c("lda_data/",path))
 
+```
 
+Iterate over file name
+
+```{r}
+import_data = function(x){
+  
+  ID_df %>% filter(path==x) %>% 
+    mutate(
+        read_csv(x)
+    )
+}
+
+lda_df= map(path_df$path,import_data) %>% bind_rows()
+
+```
+
+Data cleaning
+
+```{r}
+clean_df = lda_df %>% 
+  separate(path,into = c("prefix","ID"),sep="/",) %>% 
+  select(-prefix) %>% 
+  separate(ID,into = c("arm","ID"),sep="_") %>% 
+  separate(ID,into = c("ID","suffix"),convert = TRUE) %>% 
+  select(-suffix)
+  
+
+```
 
 
 
