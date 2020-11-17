@@ -6,7 +6,7 @@ output: github_document
 
 ```{r setup, include=FALSE}
 library(tidyverse)
-
+library(ggplot2)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -119,15 +119,35 @@ clean_df = lda_df %>%
   separate(path,into = c("prefix","ID"),sep="/",) %>% 
   select(-prefix) %>% 
   separate(ID,into = c("arm","ID"),sep="_") %>% 
-  separate(ID,into = c("ID","suffix"),convert = TRUE) %>% 
-  select(-suffix)
-  
+  separate(ID,into = c("arm_ID","suffix"),convert = TRUE) %>% 
+  select(-suffix) %>% 
+  mutate(
+    ID = str_c(1:20)
+  ) %>% 
+  select(ID,everything())
 
+time_data = unnest(clean_df$data)
+clean_df = cbind(clean_df,time_data) %>% 
+  select(ID:arm_ID,week_1:week_8)
 ```
 
 
+spaghetti plot
 
+```{r}
+clean_df %>% 
+  pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    values_to = "value",
+    names_prefix="week_"
+  ) %>% 
+    ggplot(aes(x=week,y=value,group=ID,color=arm))+
+    geom_line()
 
+```
+
+Generally, the observational value was higher among experimental group than control group overtime. The observation value of subjects in experimental were shown to be increasing over time, while those in control group remained steady.
 
 
 
