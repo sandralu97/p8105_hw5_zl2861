@@ -1,6 +1,6 @@
 ---
-title: "Final Project Proposal"
-date: "11/7/2020"
+title: "Homework 5"
+date: "11/18/2020"
 output: github_document
 ---
 
@@ -83,6 +83,7 @@ result_df %>%
 #Question 2
 
 Create a dataframe containing all file names
+
 ```{r}
 path_df = 
   tibble(
@@ -250,7 +251,9 @@ ggplot(p3, aes(x = true_mu, y= average_estimate, color = ave_type))+geom_point()
 The sample average of mu across tests for which the null is rejected is approximately equal to the true mu at 0, but greater than true mu when true mu is 1 or 2, and becomes similar again after 3.
 
 When true µ = 0, most mu_hat is around 0 despite that the null hypothesis is rejected.
+
 When true µ = 1, there are a large proportion of µ_hat is similar to 0. Only those deviate from 0 with a large extent the null hypothesis is rejected. Therefore the average of µ_hat is larger than true µ.
+
 However, when effect size becomes larger, more mu_hat is being rejected. Therefore, the average of µ_hat becomes similar to true µ
 
 
