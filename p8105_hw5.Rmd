@@ -186,20 +186,72 @@ rerun_summary = map(.x=vec_mu$mu,~rerun_function(.x)) %>% bind_rows()
 
 ```
 
-Association between effect size and power
+## plot 1: Association between effect size and power
+
 ```{r}
-rerun_summary %>% 
+rerun_summary = rerun_summary %>% 
   mutate(
-    test_power = 1-p.value
-  ) %>% 
-  ggplot(aes(x = true_mu, y=test_power,group=true_mu))+geom_boxplot()+
+    rejection=case_when(
+      p.value<0.05 ~ 1,
+      p.value>=0.05 ~ 0
+    )
+  ) 
+
+reject_count = rerun_summary %>% 
+  group_by(true_mu) %>% 
+  summarize(reject = sum(rejection)) %>% 
+  mutate(
+    test_power = reject/5000
+  )
+
+reject_count %>% 
+  ggplot(aes(x = true_mu, y=test_power))+geom_point()+geom_smooth()+
   scale_x_continuous(breaks=c(0:6))
   
 
 ```
+As effect size becomes larger, the power of the t.tests also becomes higher until reaches highest power possible (1)
 
 
+## plot 2: average estimate of mu is and the true value of mu
 
+```{r}
+rerun_summary %>% 
+  group_by(true_mu) %>% 
+  summarize(average_estimate = mean(estimate)) %>% 
+  ggplot(aes(x = true_mu, y = average_estimate))+geom_point()+geom_smooth()+
+  scale_x_continuous(breaks=c(0:6))+
+  scale_y_continuous(breaks = c(0:6))
+
+```
+
+## plot 3 + plot 2: average estimate of mu only in samples for which the null was rejected on the y axis and the true value of μ on the x axis
+
+```{r}
+plot_2 = rerun_summary %>% 
+  group_by(true_mu) %>% 
+  summarize(ave_estimate = mean(estimate))
+
+plot_3 = rerun_summary %>% 
+  filter(rejection == 1) %>% 
+  group_by(true_mu) %>% 
+  summarize(ave_est_reject = mean(estimate))
+
+p3 = full_join(plot_2,plot_3) %>% pivot_longer(
+  ave_estimate:ave_est_reject,
+  names_to = "ave_type",
+  values_to ="average_estimate"
+) 
+ggplot(p3, aes(x = true_mu, y= average_estimate, color = ave_type))+geom_point()+geom_smooth()+
+  scale_x_continuous(breaks=c(0:6))+
+  scale_y_continuous(breaks = c(0:6))
+```
+
+The sample average of mu across tests for which the null is rejected is approximately equal to the true mu at 0, but greater than true mu when true mu is 1 or 2, and becomes similar again after 3.
+
+When true µ = 0, most mu_hat is around 0 despite that the null hypothesis is rejected.
+When true µ = 1, there are a large proportion of µ_hat is similar to 0. Only those deviate from 0 with a large extent the null hypothesis is rejected. Therefore the average of µ_hat is larger than true µ.
+However, when effect size becomes larger, more mu_hat is being rejected. Therefore, the average of µ_hat becomes similar to true µ
 
 
 
