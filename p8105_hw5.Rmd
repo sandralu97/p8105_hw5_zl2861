@@ -8,6 +8,7 @@ output: github_document
 library(tidyverse)
 library(ggplot2)
 
+
 knitr::opts_chunk$set(
   fig.width = 6,
   fig.asp = .6,
@@ -126,9 +127,7 @@ clean_df = lda_df %>%
   ) %>% 
   select(ID,everything())
 
-time_data = unnest(clean_df$data)
-clean_df = cbind(clean_df,time_data) %>% 
-  select(ID:arm_ID,week_1:week_8)
+
 ```
 
 
@@ -150,9 +149,54 @@ clean_df %>%
 Generally, the observational value was higher among experimental group than control group overtime. The observation value of subjects in experimental were shown to be increasing over time, while those in control group remained steady.
 
 
+# Problem 3
+
+Generate 5000 datasets & run t-test
+
+```{r}
+sim_function = function(n=30,mu,sd=5){
+  
+  sim_data = tibble(
+    x=rnorm(30, mean = mu, sd=5),
+  )
+
+  
+  test_0 = t.test(sim_data$x,mu=0) %>% broom::tidy()
+}
+
+sim_result = rerun(5000,sim_function(mu=0)) %>% bind_rows()
 
 
 
+
+```
+
+
+repeat for different mu
+
+```{r}
+rerun_function = function(x){
+  rerun_result = rerun(5000,sim_function(mu=x)) %>% bind_rows() %>% mutate(
+    true_mu = x
+  )
+}
+
+vec_mu = tibble(mu = 0:6)
+rerun_summary = map(.x=vec_mu$mu,~rerun_function(.x)) %>% bind_rows()
+
+```
+
+Association between effect size and power
+```{r}
+rerun_summary %>% 
+  mutate(
+    test_power = 1-p.value
+  ) %>% 
+  ggplot(aes(x = true_mu, y=test_power,group=true_mu))+geom_boxplot()+
+  scale_x_continuous(breaks=c(0:6))
+  
+
+```
 
 
 
